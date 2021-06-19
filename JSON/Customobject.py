@@ -31,7 +31,7 @@ class UserEncoder(JSONEncoder):
 
     def default(self, o):
         if isinstance(o, User):
-            return {'name': o.name, 'age': o.age, o.__class__.__name__:True}
+            return {'name': o.name, 'age': o.age, o.__class__.__name__:True}    # cái cuối là User class name (trick để tí decode)
         return JSONEncoder.default(self, o)
 
 userJSON = json.dumps(user, cls=UserEncoder)
@@ -40,3 +40,18 @@ userJSON = json.dumps(user, cls=UserEncoder)
 userJSON = UserEncoder().encode(user)
 print(userJSON)
 
+""" Muốn decode thì sao (deserialization) """
+# Khi decode trở lại sẽ nhận được dictionary chứ không phải object như ta mong muốn
+# ko dùng được như user.name, do đó cần viết custom decoding method
+user = json.loads(userJSON)
+print(user)
+print(type(user))
+
+def decode_user(dct):
+    if User.__name__ in dct:   # tìm tên class User có thuộc keys của dict không
+        return User(name=dct['name'], age=dct['age'])
+    return dct 
+
+user = json.loads(userJSON, object_hook=decode_user)
+print(user.name)
+print(user)
